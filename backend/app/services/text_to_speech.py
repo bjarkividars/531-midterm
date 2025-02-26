@@ -1,13 +1,14 @@
 from fastapi import WebSocket, WebSocketDisconnect
 import asyncio
 import logging
-from typing import Optional
+from typing import Optional, Dict, List
 import re
 from openai import OpenAI, AssistantEventHandler
 from openai.types.beta.threads import TextDelta, Text
 from typing_extensions import override
 import tempfile
 import os
+import datetime
 
 from fastapi.websockets import WebSocketState
 from app.config import settings
@@ -22,89 +23,160 @@ class TTSAssistantHandler(AssistantEventHandler):
         self.audio_queue = audio_queue
         self.synthesis_done = synthesis_done
         self.current_sentence = ""
-        # NEW: Track pending TTS processing tasks
-        self.pending_tts_tasks = []
+        self.processing_tasks = {}  # Maps sentence_id -> asyncio.Task
+        self.current_sentence_id = 0  # Just for logging
+        
+        # New attributes for ordered audio handling
+        self.next_sentence_to_send = 1  # Start with the first sentence
+        self.stored_audio_chunks = {}  # Maps sentence_id -> list of audio chunks
+        
         self.openai_client = OpenAI(api_key=settings.openai_api_key)
-        print("TTSAssistantHandler initialized")
         
     @override
     def on_text_created(self, text) -> None:
-        print("Text creation started")
         self.current_sentence = ""
     
     @override
     def on_text_delta(self, delta: TextDelta, snapshot: Text) -> None:
-        logger.debug(f"Received text delta: {delta.value}")
         self.current_sentence += delta.value
         
         # Check if we have a complete sentence
         if any(end in delta.value for end in ['.', '!', '?']) and len(self.current_sentence.strip()) > 0:
             complete_sentence = self.current_sentence.strip()
-            print(f"Complete sentence detected: {complete_sentence}")
-            # NEW: Create and store the task, so we can await it later
-            task = asyncio.create_task(self.process_sentence(complete_sentence))
-            self.pending_tts_tasks.append(task)
+            self.current_sentence_id += 1
+            sentence_id = self.current_sentence_id
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+            print(f"[{timestamp}] Sentence {sentence_id} received: {complete_sentence}")
+            
+            # Process this sentence immediately and ensure it runs right away
+            task = asyncio.create_task(self.process_sentence(complete_sentence, sentence_id))
+            self.processing_tasks[sentence_id] = task
+            
+            # Ensure this task gets a chance to run by yielding to the event loop
+            asyncio.create_task(self._ensure_immediate_processing(sentence_id, task))
+            
             self.current_sentence = ""
-        else:
-            logger.debug(f"Current incomplete sentence: {self.current_sentence}")
 
     @override
     def on_message_done(self, message) -> None:
-        print("Message processing completed")
         # Process any remaining text
         if len(self.current_sentence.strip()) > 0:
             final_sentence = self.current_sentence.strip()
-            print(f"Processing final sentence fragment: {final_sentence}")
-            task = asyncio.create_task(self.process_sentence(final_sentence))
-            self.pending_tts_tasks.append(task)
-        else:
-            print("No remaining text to process")
-        # NEW: Wait for all TTS processing tasks to complete before signaling done
-        asyncio.create_task(self._wait_for_all_tts())
+            self.current_sentence_id += 1
+            sentence_id = self.current_sentence_id
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+            print(f"[{timestamp}] Final sentence {sentence_id} received: {final_sentence}")
+            
+            # Process the final sentence and ensure it runs immediately
+            task = asyncio.create_task(self.process_sentence(final_sentence, sentence_id))
+            self.processing_tasks[sentence_id] = task
+            
+            # Ensure this task gets a chance to run by yielding to the event loop
+            asyncio.create_task(self._ensure_immediate_processing(sentence_id, task))
+            
+        # Wait for all sentences to be processed
+        asyncio.create_task(self.wait_for_all_sentences())
 
-    async def _wait_for_all_tts(self):
-        if self.pending_tts_tasks:
-            await asyncio.gather(*self.pending_tts_tasks)
-        print("All TTS tasks completed, setting synthesis_done event")
-        self.synthesis_done.set()
-
-    async def process_sentence(self, sentence: str):
-        """Convert a sentence to speech using OpenAI TTS and queue the audio."""
-        print(f"Starting TTS processing for sentence: {sentence}")
+    async def wait_for_all_sentences(self):
+        """Wait for all sentences to be processed before setting the synthesis_done event."""
         try:
-            # Create a temporary file for the speech
-            with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_file:
-                print(f"Created temporary file: {temp_file.name}")
-                
-                # Generate speech using OpenAI TTS
-                print("Calling OpenAI TTS API...")
-                response = await asyncio.to_thread(
-                    lambda: self.openai_client.audio.speech.create(
-                        model="tts-1",
-                        voice="alloy",
-                        input=sentence
-                    )
+            if self.processing_tasks:
+                # Wait for all processing tasks to complete
+                await asyncio.gather(*self.processing_tasks.values())
+            
+            # Make sure all pending audio has been sent
+            await self.send_pending_audio()
+            
+            self.synthesis_done.set()
+        except Exception as e:
+            logger.error(f"Error in wait_for_all_sentences: {e}", exc_info=True)
+            # Ensure the synthesis_done event is set even if there's an error
+            self.synthesis_done.set()
+
+    async def process_all_sentences(self):
+        """
+        Compatibility method for the existing API. 
+        We'll wait for all sentences to finish processing.
+        """
+        try:
+            if self.processing_tasks:
+                # Wait for all processing tasks to complete
+                await asyncio.gather(*self.processing_tasks.values())
+            
+            # Make sure all pending audio has been sent
+            await self.send_pending_audio()
+        except Exception as e:
+            logger.error(f"Error in process_all_sentences: {e}", exc_info=True)
+
+    async def send_pending_audio(self):
+        """
+        Check if we can send any pending audio chunks in order.
+        This should be called whenever a new sentence is processed.
+        """
+        while self.next_sentence_to_send in self.stored_audio_chunks:
+            sentence_id = self.next_sentence_to_send
+            chunks = self.stored_audio_chunks[sentence_id]
+            
+            for chunk in chunks:
+                await self.audio_queue.put(chunk)
+            
+            # Remove the sent chunks to free memory
+            del self.stored_audio_chunks[sentence_id]
+            
+            # Move to the next sentence
+            self.next_sentence_to_send += 1
+
+    async def process_sentence(self, sentence: str, sentence_id: int):
+        """
+        Convert a sentence to speech using OpenAI TTS and store the chunks
+        until they can be sent in order.
+        """
+        try:
+            # Generate speech using OpenAI TTS
+            response = await asyncio.to_thread(
+                lambda: self.openai_client.audio.speech.create(
+                    model="tts-1",
+                    voice="alloy",
+                    input=sentence
                 )
-                print("Successfully received TTS response from OpenAI")
-                
-                # Save the audio to the temporary file
-                print(f"Writing audio to temporary file: {temp_file.name}")
-                response.write_to_file(temp_file.name)
-                
-                # Read the file in chunks and send to queue
-                print("Starting to read and queue audio chunks")
-                chunk_count = 0
-                with open(temp_file.name, "rb") as audio_file:
-                    while chunk := audio_file.read(32768):  # 32KB chunks
-                        await self.audio_queue.put(chunk)
-                        chunk_count += 1
-                print(f"Queued {chunk_count} audio chunks")
-                        
-            # Clean up the temporary file
-            print(f"Cleaning up temporary file: {temp_file.name}")
-            os.unlink(temp_file.name)
-            print("TTS processing completed successfully")
+            )
+            
+            # Create a temporary file and save the audio to it
+            with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_file:
+                temp_file_path = temp_file.name
+                response.write_to_file(temp_file_path)
+            
+            # Read the entire file into memory
+            with open(temp_file_path, "rb") as audio_file:
+                audio_data = audio_file.read()
+            
+            # Clean up the temporary file now that we have the data
+            os.unlink(temp_file_path)
+            
+            # Prepare the audio chunks
+            chunk_size = 32768  # 32KB chunks
+            chunks = []
+            for i in range(0, len(audio_data), chunk_size):
+                chunk = audio_data[i:i+chunk_size]
+                chunks.append(chunk)
+            
+            # Store the chunks instead of sending them directly
+            self.stored_audio_chunks[sentence_id] = chunks
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+            print(f"[{timestamp}] Sentence {sentence_id} synthesized ({len(chunks)} chunks)")
+            
+            # Try to send any pending sentences that are now ready
+            # Make this a fire-and-forget task to avoid blocking
+            asyncio.create_task(self.send_pending_audio())
             
         except Exception as e:
-            logger.error(f"Error processing sentence: {e}", exc_info=True)
+            logger.error(f"Error processing sentence {sentence_id}: {e}", exc_info=True)
             raise  # Re-raise the exception to ensure it's properly handled upstream
+
+    async def _ensure_immediate_processing(self, sentence_id: int, task):
+        """Helper method to ensure immediate processing of sentence tasks."""
+        try:
+            # Yield control to the event loop to let the task start
+            await asyncio.sleep(0)
+        except Exception as e:
+            logger.error(f"Error in _ensure_immediate_processing for sentence {sentence_id}: {e}", exc_info=True)

@@ -9,7 +9,7 @@ interface Message {
 export const Transcription = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isRecording, setIsRecording] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   const wsRef = useRef<WebSocket | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
@@ -17,7 +17,6 @@ export const Transcription = () => {
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement>(new Audio());
   const audioQueueRef = useRef<ArrayBuffer[]>([]);
-  const audioBlobsRef = useRef<Blob[]>([]);
   const isPlayingResponseRef = useRef(false);
 
   const appendMessage = (text: string, type: Message['type']) => {
@@ -27,27 +26,32 @@ export const Transcription = () => {
   const playNextAudioChunk = useCallback(async () => {
     if (audioQueueRef.current.length > 0 && !isPlayingResponseRef.current) {
       isPlayingResponseRef.current = true;
+      setIsPlayingAudio(true);
       
-      const chunks = [];
-      while (audioQueueRef.current.length > 0) {
-        chunks.push(audioQueueRef.current.shift()!);
-      }
+      // Get the next chunk from the queue
+      const chunk = audioQueueRef.current.shift()!;
       
-      const blob = new Blob(chunks, { type: 'audio/mp3' });
-      audioBlobsRef.current.push(blob);
-      
+      // Create a blob from the audio data
+      const blob = new Blob([chunk], { type: 'audio/mp3' });
       const audioUrl = URL.createObjectURL(blob);
       audioPlayerRef.current.src = audioUrl;
       
       try {
-        console.log('Starting audio playback...');
+        console.log('Playing audio chunk...');
         await audioPlayerRef.current.play();
-        appendMessage("Playing assistant's response...", 'status');
       } catch (error) {
         console.error('Error playing audio:', error);
         isPlayingResponseRef.current = false;
+        setIsPlayingAudio(false);
         URL.revokeObjectURL(audioUrl);
+        
+        // Try the next chunk if this one failed
+        playNextAudioChunk();
       }
+    } else if (audioQueueRef.current.length === 0) {
+      // No more chunks in the queue
+      isPlayingResponseRef.current = false;
+      setIsPlayingAudio(false);
     }
   }, []);
 
@@ -73,7 +77,8 @@ export const Transcription = () => {
   const startRecording = async () => {
     setMessages([]);
     audioQueueRef.current = [];
-      audioBlobsRef.current = [];
+    isPlayingResponseRef.current = false;
+    setIsPlayingAudio(false);
       
     console.log('Starting recording...');
     
@@ -90,7 +95,6 @@ export const Transcription = () => {
     wsRef.current.binaryType = "arraybuffer";
 
     wsRef.current.onopen = async () => {
-      setIsConnected(true);
       appendMessage("WebSocket connected.", 'status');
       try {
         audioStreamRef.current = await navigator.mediaDevices.getUserMedia({ 
@@ -130,20 +134,39 @@ export const Transcription = () => {
     wsRef.current.onmessage = (event: MessageEvent) => {
       if (event.data instanceof ArrayBuffer) {
         console.log('Received audio chunk:', event.data.byteLength, 'bytes');
+        // Add the audio chunk to the queue
         audioQueueRef.current.push(event.data);
+        // Try to play the next chunk
         playNextAudioChunk();
       } else {
+        // Handle text messages
         const message = event.data as string;
-        if (message.startsWith("PARTIAL: ")) {
-          appendMessage(message.substring(9), 'partial');
-        } else if (message.startsWith("FINAL: ")) {
-          appendMessage(message.substring(7), 'final');
-        } else if (message.startsWith("COMPLETE_TRANSCRIPTION: ")) {
-          appendMessage(message.substring(23), 'section');
-        } else if (message === "RESPONSE_COMPLETE") {
-          appendMessage("Assistant's response complete", 'status');
-        } else {
-          appendMessage(message, 'status');
+        
+        // Try to parse as JSON first
+        try {
+          const jsonData = JSON.parse(message);
+          console.log('Received JSON message:', jsonData);
+          
+          // For now, we only need to know when all audio is complete
+          if (jsonData.type === 'audio_complete') {
+            appendMessage("Audio playback complete", 'status');
+          }
+          
+          return;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars  
+        } catch (e) {
+          // Not JSON, handle as regular text
+          if (message.startsWith("PARTIAL: ")) {
+            appendMessage(message.substring(9), 'partial');
+          } else if (message.startsWith("FINAL: ")) {
+            appendMessage(message.substring(7), 'final');
+          } else if (message.startsWith("COMPLETE_TRANSCRIPTION: ")) {
+            appendMessage(message.substring(23), 'section');
+          } else if (message === "RESPONSE_COMPLETE") {
+            appendMessage("Assistant's response complete", 'status');
+          } else {
+            appendMessage(message, 'status');
+          }
         }
       }
     };
@@ -153,7 +176,6 @@ export const Transcription = () => {
     };
 
     wsRef.current.onclose = () => {
-      setIsConnected(false);
       setIsRecording(false);
       appendMessage("WebSocket connection closed.", 'status');
     };
@@ -167,12 +189,11 @@ export const Transcription = () => {
       URL.revokeObjectURL(audioPlayer.src);
       isPlayingResponseRef.current = false;
       
+      // Play the next chunk if available
       if (audioQueueRef.current.length > 0) {
         playNextAudioChunk();
-      } else if (audioBlobsRef.current.length > 0) {
-        const finalBlob = new Blob(audioBlobsRef.current, { type: 'audio/mp3' });
-        console.log('Created final audio blob:', finalBlob.size, 'bytes');
-        audioBlobsRef.current = [];
+      } else {
+        setIsPlayingAudio(false);
       }
     };
 
@@ -226,6 +247,17 @@ export const Transcription = () => {
           </div>
         ))}
       </div>
+      
+      {/* Simple audio playback status */}
+      {isPlayingAudio && (
+        <div className={styles.audioResponse}>
+          <h2>Assistant's Audio Response</h2>
+          <div className={styles.playingIndicator}>
+            <div className={styles.spinner}></div>
+            <p>Playing audio response...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

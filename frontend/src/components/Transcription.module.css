@@ -76,4 +76,50 @@
   color: #4a5568;
   font-style: italic;
   font-size: 0.9em;
+}
+
+/* Audio response visualization */
+.audioResponse {
+  margin-top: 2em;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1em;
+  background-color: #f8fafc;
+}
+
+.playingIndicator {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  margin-top: 1em;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(66, 153, 225, 0.3);
+  border-radius: 50%;
+  border-top-color: #4299e1;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Remove unused styles */
+.sentences, .sentence, .sentence.playing, .sentence.played {
+  display: none;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(66, 153, 225, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(66, 153, 225, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(66, 153, 225, 0);
+  }
 } 
