@@ -1,81 +1,249 @@
-.transcriptionContainer {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0px 20px;
-}
-
-.buttonContainer {
-  margin: 1em 0;
+.outerContainer {
   display: flex;
-  gap: 1rem;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 100%;
 }
 
-.buttonContainer button {
-  padding: 0.5em 1em;
+.transcriptionContainer {
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Controls styling */
+.controls {
+  margin-bottom: 20px;
+}
+
+.startButton {
+  padding: 10px 20px;
   font-size: 1rem;
   border: none;
   border-radius: 4px;
-  background-color: #4299e1;
+  background-color: #3498db;
   color: white;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
-.buttonContainer button:hover:not(:disabled) {
-  background-color: #2b6cb0;
+.startButton:hover {
+  background-color: #2980b9;
 }
 
-.buttonContainer button:disabled {
-  background-color: #a0aec0;
+.recordingControls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stopButton {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.stopButton:first-child {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.stopButton:last-of-type {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.stopButton:hover:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+.stopButton:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-.output {
-  margin-top: 1em;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 1em;
-  min-height: 200px;
-  max-height: 400px;
+.recordingIndicator {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  color: #e74c3c;
+  font-weight: 500;
+}
+
+.recordingDot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background-color: #e74c3c;
+  border-radius: 50%;
+  margin-right: 8px;
+  animation: pulse 1.5s infinite;
+}
+
+/* Messages container */
+.messagesContainer {
+  margin-bottom: 20px;
+  width: 100%;
+  min-height: 100px;
+  max-height: 200px;
   overflow-y: auto;
-  background-color: #f8fafc;
+  border: 1px solid #eaeaea;
+  border-radius: 4px;
+  padding: 10px;
 }
 
 .message {
-  margin: 0.5em 0;
-  padding: 0.5em;
+  margin-bottom: 5px;
+  padding: 5px 10px;
   border-radius: 4px;
-  color: black;
+  font-size: 0.9rem;
 }
 
-.message.partial {
-  /* color: #718096; */
+.partial {
+  color: #7f8c8d;
   font-style: italic;
 }
 
-.message.final {
-  color: #2c5282;
-  font-weight: bold;
+.final {
+  color: #34495e;
 }
 
-.message.section {
-  margin: 1em 0;
-  padding: 1em;
-  background-color: #f7fafc;
-  border-left: 4px solid #4299e1;
-  border-radius: 4px;
+.section {
+  background-color: #f1f8ff;
+  border-left: 3px solid #3498db;
+  padding: 10px;
+  margin: 10px 0;
 }
 
-.sectionHeader {
-  color: #2b6cb0;
-  font-weight: bold;
-  margin-bottom: 0.5em;
-}
-
-.message.status {
-  color: #4a5568;
+.status {
+  color: #7f8c8d;
+  font-size: 0.8rem;
+  text-align: center;
   font-style: italic;
-  font-size: 0.9em;
+}
+
+/* Current Transcription Styling */
+.currentTranscriptionContainer {
+  margin: 20px 0;
+  width: 100%;
+  min-height: 50px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.currentTranscription {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: #2c3e50;
+  word-wrap: break-word;
+}
+
+.currentTranscription.partial {
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+.currentTranscription.final {
+  color: #34495e;
+  font-weight: 500;
+}
+
+.currentTranscription.section {
+  color: #2980b9;
+  font-weight: 500;
+}
+
+/* Teleprompter styling */
+.teleprompterContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.teleprompterBackdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: -1;
+}
+
+.teleprompterContent {
+  width: 80%;
+  max-width: 800px;
+  padding: 30px;
+  background-color: #2c3e50;
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  position: relative;
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  width: 30px;
+  height: 30px;
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.closeButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.teleprompterContent h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #3498db;
+  font-size: 1.4rem;
+  text-align: center;
+}
+
+.teleprompterText {
+  font-size: 1.3rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Audio response visualization */

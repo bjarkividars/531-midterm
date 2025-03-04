@@ -385,3 +385,55 @@ class PineconeVectorStore:
         except Exception as e:
             logger.error(f"Error querying vector store: {e}", exc_info=True)
             raise
+
+    async def delete_file_vectors(self, filename: str) -> Dict[str, Any]:
+        """
+        Delete all vector embeddings associated with a specific file.
+        
+        Args:
+            filename: Name of the file whose vectors should be deleted
+            
+        Returns:
+            Dictionary with deletion statistics
+        """
+        try:
+            if not self.index:
+                await self.initialize_async()
+                
+            # Get all vector IDs with metadata.source matching the filename
+            # First, we need to find all the vectors that have this filename
+            fetch_response = await asyncio.to_thread(
+                lambda: self.index.query(
+                    vector=[0] * self.embedding_dimensions,  # Dummy vector
+                    top_k=10000,  # Large number to get all potential matches
+                    include_metadata=True,
+                    filter={"source": {"$eq": filename}}
+                )
+            )
+            
+            # Extract IDs of vectors to delete
+            vector_ids = [match.id for match in fetch_response.matches]
+            
+            if not vector_ids:
+                logger.info(f"No vectors found for file '{filename}'")
+                return {
+                    "deleted": False,
+                    "message": f"No vectors found for file '{filename}'",
+                    "count": 0
+                }
+                
+            # Delete the vectors
+            delete_response = await asyncio.to_thread(
+                lambda: self.index.delete(ids=vector_ids)
+            )
+            
+            logger.info(f"Deleted {len(vector_ids)} vectors for file '{filename}'")
+            return {
+                "deleted": True,
+                "message": f"Deleted {len(vector_ids)} vectors for file '{filename}'",
+                "count": len(vector_ids)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error deleting vectors for file '{filename}': {e}", exc_info=True)
+            raise
