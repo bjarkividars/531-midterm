@@ -52,13 +52,13 @@ export const Transcription: FC<TranscriptionProps> = ({
         </div>
 
         {/* Status messages container */}
-        <div className={styles.messagesContainer}>
+        {/* <div className={styles.messagesContainer}>
           {messages.map((msg, idx) => (
             <div key={idx} className={`${styles.message} ${styles[msg.type]}`}>
               {msg.text}
             </div>
           ))}
-        </div>
+        </div> */}
 
         {/* Current transcription display */}
         {transcriptions && (

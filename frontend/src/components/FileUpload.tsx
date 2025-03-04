@@ -1,7 +1,11 @@
 import { useState, useRef, useCallback } from 'react';
 import styles from './FileUpload.module.css';
 
-export const FileUpload = () => {
+interface FileUploadProps {
+  onUploadSuccess?: () => void;
+}
+
+export const FileUpload = ({ onUploadSuccess }: FileUploadProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -69,6 +73,11 @@ export const FileUpload = () => {
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
+        
+        // Call the onUploadSuccess callback if provided
+        if (onUploadSuccess) {
+          onUploadSuccess();
+        }
       } else {
         setUploadStatus({
           success: false,
@@ -84,7 +93,7 @@ export const FileUpload = () => {
     } finally {
       setIsUploading(false);
     }
-  }, [selectedFiles]);
+  }, [selectedFiles, onUploadSuccess]);
 
   return (
     <div className={styles.fileUploadContainer}>

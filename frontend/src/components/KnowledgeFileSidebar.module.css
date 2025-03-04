@@ -1,60 +1,66 @@
 .sidebar {
+  box-sizing: border-box;
   width: 300px;
   height: 100%;
-  background-color: #f5f5f5;
-  border-right: 1px solid #e0e0e0;
-  padding: 20px;
+  background-color: #f8fafc;
+  border-right: 1px solid #e6e9f0;
+  padding: 24px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  color: #2c3e50;
+  color: #16213e;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .header h2 {
   margin: 0;
   font-size: 1.2rem;
-  color: #2c3e50;
+  color: #16213e;
+  font-weight: 600;
 }
 
 .refreshButton {
   background-color: transparent;
   border: none;
-  color: #3498db;
+  color: #4361ee;
   cursor: pointer;
   font-size: 0.9rem;
   padding: 5px;
+  transition: all 0.2s ease;
 }
 
 .refreshButton:hover {
-  text-decoration: underline;
+  text-decoration: none;
+  color: #3a0ca3;
+  transform: scale(1.05);
 }
 
 .loading {
   text-align: center;
-  padding: 20px;
-  color: #7f8c8d;
+  padding: 24px;
+  color: #6b7280;
 }
 
 .error {
-  color: #e74c3c;
-  background-color: #fdecea;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 15px;
+  color: #ef4444;
+  background-color: #fee2e2;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 16px;
   font-size: 0.9rem;
 }
 
 .empty {
   text-align: center;
-  padding: 20px;
-  color: #7f8c8d;
+  padding: 24px;
+  color: #6b7280;
   font-style: italic;
 }
 
@@ -68,13 +74,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
-  border-bottom: 1px solid #e0e0e0;
-  transition: background-color 0.2s;
+  padding: 14px;
+  border-bottom: 1px solid #e6e9f0;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  margin-bottom: 4px;
 }
 
 .fileItem:hover {
-  background-color: #ecf0f1;
+  background-color: #eef2ff;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(67, 97, 238, 0.1);
 }
 
 .fileInfo {
@@ -84,34 +94,38 @@
 
 .fileName {
   font-weight: 500;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
   word-break: break-word;
+  color: #16213e;
 }
 
 .fileDetails {
   display: flex;
   flex-direction: column;
   font-size: 0.8rem;
-  color: #7f8c8d;
+  color: #6b7280;
 }
 
 .fileDetails span {
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 .deleteButton {
   background-color: transparent;
-  color: #e74c3c;
+  color: #ef4444;
   border: none;
   cursor: pointer;
   font-size: 0.9rem;
-  padding: 5px 10px;
+  padding: 6px 12px;
   opacity: 0.7;
-  transition: opacity 0.2s;
+  box-shadow: none;
+  transition: all 0.2s ease;
+  border-radius: 6px;
 }
 
 .deleteButton:hover {
   opacity: 1;
+  background-color: rgba(239, 68, 68, 0.1);
 }
 
 .confirmationOverlay {
@@ -120,7 +134,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(22, 33, 62, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -129,40 +144,44 @@
 
 .confirmationDialog {
   background-color: white;
-  border-radius: 8px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 24px;
   width: 90%;
   max-width: 400px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
 .confirmationDialog h3 {
   margin-top: 0;
-  color: #e74c3c;
+  color: #ef4444;
+  font-weight: 600;
 }
 
 .confirmationButtons {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 12px;
+  margin-top: 24px;
 }
 
 .cancelButton, 
 .confirmButton {
-  padding: 8px 16px;
+  padding: 10px 20px;
   border: none;
-  border-radius: 4px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
 }
 
 .cancelButton {
-  background-color: #ecf0f1;
-  color: #7f8c8d;
+  background-color: #eaecef;
+  color: #4f566b;
 }
 
 .confirmButton {
-  background-color: #e74c3c;
+  background-color: #ef4444;
   color: white;
+  font-weight: 500;
 } 

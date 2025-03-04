@@ -78,13 +78,13 @@ export const KnowledgeFileSidebar = () => {
     <div className={styles.sidebar}>
       <div className={styles.header}>
         <h2>Knowledge Files</h2>
-        <button onClick={fetchFiles} className={styles.refreshButton}>
+        {/* <button onClick={fetchFiles} className={styles.refreshButton}>
           Refresh
-        </button>
+        </button> */}
       </div>
 
       <div className={styles.fileUploadContainer}>
-        <FileUpload />
+        <FileUpload onUploadSuccess={fetchFiles} />
       </div>
       
       {isLoading && <div className={styles.loading}>Loading files...</div>}

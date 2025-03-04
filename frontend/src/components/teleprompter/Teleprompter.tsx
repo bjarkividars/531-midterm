@@ -28,9 +28,6 @@ export const Teleprompter = ({
             {text}
           </div>
         </div>
-        <div className={styles.scrollInstructions}>
-          Scroll to read through the response
-        </div>
       </div>
     </div>
   );

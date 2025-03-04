@@ -10,10 +10,15 @@ interface Message {
   type: "partial" | "final" | "section" | "status";
 }
 
+interface Transcription {
+  text: string;
+  type: "partial" | "final" | "section";
+}
+
 export const App = () => {
   // Transcription state
   const [messages, setMessages] = useState<Message[]>([]);
-  const [transcriptions, setTranscriptions] = useState<string>("");
+  const [transcriptions, setTranscriptions] = useState<Transcription[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   
   // Teleprompter state
@@ -32,14 +37,20 @@ export const App = () => {
   const appendMessage = (text: string, type: Message["type"]) => {
     if (type === "status") {
       setMessages((prev) => [...prev, { text, type }]);
-    } else {
-      // Set the transcription
-      if (type === "final" || type === "section") {
-        const newText = type === "final" ? text : text;
-        setTranscriptions(newText);
-      } else if (type === "partial") {
-        setTranscriptions(text);
-      }
+    } else if (type === "partial" || type === "final") {
+      setTranscriptions((prev) => {
+        const newTranscriptions = [...prev];
+        // If the last message was partial, replace it with the new message
+        // (whether partial or final)
+        if (newTranscriptions.length > 0 && 
+            newTranscriptions[newTranscriptions.length - 1].type === "partial") {
+          newTranscriptions[newTranscriptions.length - 1] = { text, type };
+        } else {
+          // Otherwise add a new message
+          newTranscriptions.push({ text, type });
+        }
+        return newTranscriptions;
+      });
     }
   };
 
@@ -185,7 +196,7 @@ export const App = () => {
   // Start recording
   const startRecording = useCallback(async () => {
     setMessages([]);
-    setTranscriptions("");
+    setTranscriptions([]);
     setAssistantResponse("");
     setIsShowingResponse(false);
     
@@ -263,12 +274,10 @@ export const App = () => {
         <KnowledgeFileSidebar />
       </div>
       <div className={styles.mainContent}>
-        <h1>AI Speech Assistant</h1>
-        <p>Start recording to interact with your virtual assistant</p>
-        
+        <h1>AI Speech Assistant</h1>        
         <Transcription
           messages={messages}
-          transcriptions={transcriptions}
+          transcriptions={transcriptions.map((t) => t.text).join(" ")}
           isRecording={isRecording}
           onStartRecording={startRecording}
           onStopRecording={stopRecording}
