@@ -1,0 +1,163 @@
+.instructionsContainer {
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: #f8fafd;
+  border-radius: 10px;
+  border: 1px solid #e6e9f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.instructionsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.instructionsHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #16213e;
+  font-weight: 600;
+}
+
+.editButton {
+  background-color: transparent;
+  color: #4361ee;
+  border: 1px solid #4361ee;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editButton:hover {
+  background-color: rgba(67, 97, 238, 0.1);
+}
+
+.editControls {
+  display: flex;
+  margin-top: 8px;
+  gap: 8px;
+  width: 100%;
+}
+
+.cancelButton, 
+.saveButton {
+  width: 100%;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton {
+  background-color: transparent;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.cancelButton:hover {
+  background-color: #f3f4f6;
+}
+
+.saveButton {
+  background-color: #4361ee;
+  color: white;
+  border: 1px solid #4361ee;
+}
+
+.saveButton:hover {
+  background-color: #3a56d4;
+}
+
+.saveButton:disabled,
+.cancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.instructionsEditor {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 100px;
+  background-color: white;
+  color: #16213e;
+}
+
+.instructionsEditor:focus {
+  outline: none;
+  border-color: #4361ee;
+  box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+}
+
+.instructionsText {
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e6e9f0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.instructionsText p {
+  margin: 0;
+  white-space: pre-line;
+  color: #4b5563;
+}
+
+.error {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  color: #ef4444;
+  background-color: #fee2e2;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.success {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  color: #10b981;
+  background-color: #d1fae5;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.loadingMessage {
+  color: #6b7280;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 12px;
+}
+
+.contextHelp {
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.emptyContext {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px dashed #d1d5db;
+  color: #6b7280;
+  font-size: 0.9rem;
+  font-style: italic;
+  text-align: center;
+  background-color: #f9fafb;
+} 

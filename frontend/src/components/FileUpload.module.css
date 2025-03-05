@@ -1,12 +1,13 @@
 .fileUploadContainer {
-  margin: 20px 0;
+  margin-bottom: 20px;
 }
 
 .uploadButton {
-  background-color: #4361ee;
-  color: white;
+  width: 100%;
+  background-color: transparent;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
   padding: 12px 20px;
-  border: none;
   border-radius: 10px;
   cursor: pointer;
   font-size: 16px;
@@ -18,7 +19,7 @@
 }
 
 .uploadButton:hover {
-  background-color: #3a0ca3;
+  background-color: #f3f4f6;
   transform: translateY(-2px);
   box-shadow: 0 6px 10px rgba(67, 97, 238, 0.2);
 }

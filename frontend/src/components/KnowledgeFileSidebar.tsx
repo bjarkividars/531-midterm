@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import styles from './KnowledgeFileSidebar.module.css';
 import { FileUpload } from './FileUpload';
+import { SystemInstructions } from './SystemInstructions';
 
 interface KnowledgeFile {
   name: string;
@@ -76,11 +77,12 @@ export const KnowledgeFileSidebar = () => {
 
   return (
     <div className={styles.sidebar}>
-      <div className={styles.header}>
-        <h2>Knowledge Files</h2>
-        {/* <button onClick={fetchFiles} className={styles.refreshButton}>
-          Refresh
-        </button> */}
+
+      {/* Presentation Context Section */}
+      <SystemInstructions />
+      
+      <div className={styles.sectionHeader}>
+        <h3>Knowledge Files</h3>
       </div>
 
       <div className={styles.fileUploadContainer}>

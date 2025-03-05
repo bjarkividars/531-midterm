@@ -7,7 +7,8 @@ from contextlib import asynccontextmanager
 from app.services.transcription import websocket_transcribe
 from app.services.pinecone_assistant import PineconeAssistant
 import os
-from typing import List
+from typing import List, Dict, Any
+from pydantic import BaseModel
 
 # uvicorn main:app --reload       
 
@@ -24,6 +25,11 @@ async def get_pinecone_assistant_http(request: Request) -> PineconeAssistant:
         raise RuntimeError("Pinecone assistant has not been initialized")
     return assistant
 
+
+# Define a model for presentation context
+class PresentationContext(BaseModel):
+    context: str
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize the assistant on startup
@@ -33,6 +39,10 @@ async def lifespan(app: FastAPI):
         
         # Store the assistant instance on app.state
         app.state.pinecone_assistant = assistant
+        
+        # Initialize presentation context
+        app.state.presentation_context = ""
+        
         logging.info("PineconeAssistant initialized successfully")
         
         # Uncomment to upload knowledge files during startup
@@ -46,6 +56,7 @@ async def lifespan(app: FastAPI):
     
     # Cleanup on shutdown if needed
     app.state.pinecone_assistant = None
+    app.state.presentation_context = ""
 
 app = FastAPI(
     title="FastAPI Project",
@@ -205,6 +216,44 @@ async def delete_knowledge_file(
 @app.websocket("/ws/transcribe")
 async def websocket_endpoint(websocket: WebSocket, pinecone_assistant: PineconeAssistant = Depends(get_pinecone_assistant)):
     await websocket_transcribe(websocket, pinecone_assistant)
+
+@app.post("/presentation-context/")
+async def update_presentation_context(
+    context_data: PresentationContext,
+    assistant: PineconeAssistant = Depends(get_pinecone_assistant_http)
+) -> Dict[str, Any]:
+    """Update the presentation context"""
+    try:
+        # Update the presentation context on the assistant
+        assistant.presentation_context = context_data.context
+        
+        return {
+            "status": "success",
+            "message": "Presentation context updated successfully"
+        }
+    except Exception as e:
+        logging.error(f"Error updating presentation context: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to update presentation context: {str(e)}"
+        )
+
+@app.get("/presentation-context/")
+async def get_presentation_context(
+    assistant: PineconeAssistant = Depends(get_pinecone_assistant_http)
+) -> Dict[str, Any]:
+    """Get the current presentation context"""
+    try:
+        return {
+            "status": "success",
+            "context": assistant.presentation_context
+        }
+    except Exception as e:
+        logging.error(f"Error getting presentation context: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get presentation context: {str(e)}"
+        )
 
 if __name__ == "__main__":
     import uvicorn

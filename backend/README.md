@@ -1,64 +1,113 @@
-# DESIGNTK 531 Midterm - Live Question-Answering Assistant
+# Live Question-Answering Assistant Backend
 
-Imagine you’re giving a presentation and someone from the audience asks you a question. Thankfully, you have our Live Question-Answering Assistant. The system captures the question in real time, transcribes it, and retrieves relevant information from your knowledge base. It then uses a GPT model to craft an answer, converts that answer to speech, and whispers it back into your ear—allowing you to respond confidently on the spot.
+This backend application powers the Live Question-Answering Assistant system, processing audio inputs, managing the knowledge base, and generating AI-powered responses.
 
----
+## Features
+
+- Real-time audio transcription (speech-to-text)
+- Knowledge base management with Pinecone vector database
+- Retrieval-Augmented Generation (RAG) for informed responses
+- Text-to-speech conversion for audio responses
+- WebSocket support for real-time communication
+- FastAPI-based REST API for managing knowledge files
+
+## Technologies Used
+
+- Python 3.9+
+- FastAPI
+- Pinecone (vector database)
+- WebSockets
+- Azure Cognitive Services Speech SDK
+- OpenAI/GPT integration
+
+## Prerequisites
+
+- Python 3.9 or higher
+- Virtual environment (recommended)
+- Azure Cognitive Services account for speech services
+- Pinecone account for vector database
+- OpenAI API key
+
+## Getting Started
+
+1. **Set up a virtual environment**
+
+```bash
+cd backend
+python -m venv venv
+
+# On Windows
+venv\Scripts\activate
+
+# On macOS/Linux
+source venv/bin/activate
+```
+
+2. **Install dependencies**
+
+```bash
+pip install -r requirements.txt
+```
+
+3. **Configure environment variables**
+
+Create a `.env` file in the backend directory with the following variables:
+
+```
+OPENAI_API_KEY=your_openai_api_key
+PINECONE_API_KEY=your_pinecone_api_key
+PINECONE_ENVIRONMENT=your_pinecone_environment
+PINECONE_INDEX_NAME=your_index_name
+AZURE_SPEECH_KEY=your_azure_speech_key
+AZURE_SPEECH_REGION=your_azure_region
+```
+
+4. **Start the server**
+
+```bash
+uvicorn main:app --reload
+```
+
+The server will start at http://localhost:8000.
+
+## API Endpoints
+
+- `GET /` - Root endpoint, serves the main HTML page
+- `POST /upload-knowledge-files/` - Upload files to the knowledge base
+- `GET /knowledge-files/` - List all files in the knowledge base
+- `DELETE /knowledge-files/{filename}` - Delete a file from the knowledge base
+- `WebSocket /ws/transcribe` - WebSocket endpoint for real-time audio transcription and responses
+
+## Project Structure
+
+- `app/` - Application modules
+  - `services/` - Service modules for transcription, RAG, etc.
+- `knowledge/` - Storage for knowledge base files
+- `static/` - Static files
+- `main.py` - FastAPI application entry point
+- `requirements.txt` - Python dependencies
+
+## Knowledge Base Management
+
+You can upload PDF files and other documents to build your knowledge base. These files are processed and stored in Pinecone's vector database for efficient retrieval during question answering.
 
 ## How It Works
 
-1. **Audio Capture**  
-   - While you speak or listen to an audience question, the system captures audio through your laptop's microphone.
-   - Audio chunks are sent via WebSocket to the backend for processing.
+![System Architecture Diagram](images/system-diagram.png)
 
-2. **Transcription (Speech-to-Text)**  
-   - Each audio chunk is transcribed using Whisper deployed on Azure.
+The system operates through the following steps:
 
-3. **Retrieval-Augmented Generation (RAG)**  
-   - Once the question is transcribed, the system embeds the text and searches your custom knowledge base for relevant documents or context.
+1. The frontend captures audio and sends it to the backend via WebSocket
+2. The backend transcribes the audio using Azure's speech services
+3. The transcribed question is used to query the Pinecone vector database
+4. Relevant information is retrieved from the knowledge base
+5. The question and retrieved context are sent to GPT to generate an answer
+6. The answer is converted to speech and sent back to the frontend
+7. The frontend plays the audio response
 
-4. **GPT Query**  
-   - The transcribed question and retrieved context are passed to an LLM (e.g., GPT-4). 
-   - The LLM generates a concise, helpful answer, tailored to your knowledge base.
+## Troubleshooting
 
-5. **Text-to-Speech (TTS)**  
-   - The LLM response is converted into spoken audio (TTS). 
-   - This audio is sent back through the WebSocket.
-
-6. **Earbud Playback**  
-   - The system delivers the synthesized answer privately to your AirPods, so you can hear the solution discreetly and respond verbally to the audience.
-
----
-
-## System Diagram
-
-Below is a simplified diagram illustrating the flow of data:
-
-![System Diagram](images/system-diagram.png)
-
-1. **Client (Your Laptop)**  
-   - **Start Recording:** Captures live audio from the question being asked.  
-   - **Send Audio Chunks:** Streams them to the backend over a WebSocket.  
-   - **Receive Answer Audio:** Plays it in your ear, discreetly.
-
-2. **Backend (Azure Services)**  
-   - **Speech-to-Text (STT):** Converts audio chunks to text.  
-   - **RAG:** Uses embeddings + a vector database to find relevant context.  
-   - **GPT Model:** Takes the question + context to produce an answer.  
-   - **Text-to-Speech (TTS):** Converts the final text answer to audio.  
-   - **Send Audio to Client:** Returns synthesized speech for you to hear.
-
-3. **Decision Logic**  
-   - **Process Command:** If you want the system to generate an answer, it runs RAG + GPT.
-
----
-
-## Data Flow Summary
-
-1. **Audio In**: Laptop → Audio chunks → WebSocket → Backend  
-2. **Transcription**: Audio → Whisper → Text  
-3. **Retrieval**: Embeddings + Vector DB → Relevant info from your knowledge base  
-4. **GPT**: Question + Context → Final text answer  
-5. **TTS**: Final text → Speech  
-6. **Audio Out**: Backend → WebSocket → Laptop
-
----
+- If you encounter WebSocket connection issues, ensure you don't have firewall restrictions
+- For Azure speech service errors, verify your API keys and region settings
+- If Pinecone isn't responding, check your API key and index configuration
+- Memory issues might occur with large knowledge bases - consider adjusting chunk sizes

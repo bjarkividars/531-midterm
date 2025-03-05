@@ -1,50 +1,81 @@
-# React + TypeScript + Vite
+# Live Question-Answering Assistant Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This frontend application provides a user interface for the Live Question-Answering Assistant system. It allows users to record audio questions, send them to the backend for processing, and receive responses.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Real-time audio recording and streaming
+- WebSocket communication with the backend
+- Knowledge base management interface
+- Modern React + TypeScript implementation
 
-## Expanding the ESLint configuration
+## Technologies Used
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- React 19
+- TypeScript
+- Vite
+- WebSockets for real-time communication
+- CSS Modules for styling
 
-- Configure the top-level `parserOptions` property like this:
+## Prerequisites
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- Node.js (v18+)
+- npm or yarn
+
+## Getting Started
+
+1. **Install dependencies**
+
+```bash
+cd frontend
+npm install
+# or
+yarn install
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+2. **Set up environment**
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+Make sure the backend server is running (see backend README).
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+3. **Start the development server**
+
+```bash
+npm run dev
+# or
+yarn dev
 ```
+
+This will start the Vite development server, typically on http://localhost:5173.
+
+4. **Build for production**
+
+```bash
+npm run build
+# or
+yarn build
+```
+
+The build output will be in the `dist` directory.
+
+## Project Structure
+
+- `src/` - Source code
+  - `components/` - React components
+  - `services/` - API and WebSocket services
+  - `assets/` - Static assets
+  - `App.tsx` - Main application component
+  - `main.tsx` - Application entry point
+
+## Usage
+
+1. Open the application in your browser
+2. Ensure your microphone is enabled
+3. Click the record button to start capturing audio
+4. The application will stream your audio to the backend
+5. The backend will process your question and stream the response back to the frontend
+
+## Troubleshooting
+
+- If you encounter WebSocket connection issues, make sure the backend server is running
+- For microphone access problems, check that your browser has permission to use the microphone
+- If audio recording doesn't work, try using a different browser (Chrome is recommended)

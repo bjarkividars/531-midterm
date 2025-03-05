@@ -26,6 +26,23 @@
   font-weight: 600;
 }
 
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  margin-bottom: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e6e9f0;
+}
+
+.sectionHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #16213e;
+  font-weight: 600;
+}
+
 .refreshButton {
   background-color: transparent;
   border: none;
