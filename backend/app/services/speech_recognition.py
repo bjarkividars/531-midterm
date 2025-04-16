@@ -29,7 +29,8 @@ class SpeechRecognitionManager:
         """
         self.message_callback = message_callback
         self.recognition_done_event = recognition_done_event or asyncio.Event()
-        self.stream = speechsdk.audio.PushAudioInputStream()
+        audio_format = speechsdk.audio.AudioStreamFormat(samples_per_second=16000, bits_per_sample=16, channels=1)
+        self.stream = speechsdk.audio.PushAudioInputStream(stream_format=audio_format)
         self.audio_config = speechsdk.audio.AudioConfig(stream=self.stream)
         self.speech_recognizer = speechsdk.SpeechRecognizer(
             speech_config=speech_config, 

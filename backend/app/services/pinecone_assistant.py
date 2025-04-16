@@ -69,13 +69,13 @@ class PineconeAssistant:
     def __init__(self):
         self.client = OpenAI(api_key=settings.openai_api_key)
         self.vector_store = None
-        self.model = "gpt-4o-mini"
+        self.model = "gpt-4.1"
         self.base_system_prompt = """You are a helpful assistant that answers questions about the user's data.
                 You will be provided with relevant context from the knowledge base for each question.
                 Use this context to provide accurate and helpful answers.
                 If the context doesn't contain the information needed to answer the question, return a guesstimate for the answer but make it clear that it is a guesstimate (Guesstimate: ...).
-                Never mention the context in your response, only the answer.
-                Ensure your responses are naturally phrased so they can be spoken directly by a speaker."""
+                Never mention the context in your response or the "information provided", only the answer.
+                Ensure your responses are naturally phrased so they can be spoken directly by the speaker."""
         
         # Placeholder for additional presentation context
         self.presentation_context = ""
@@ -87,7 +87,7 @@ class PineconeAssistant:
         if not self.presentation_context:
             return self.base_system_prompt
             
-        return f"{self.base_system_prompt}\n\nAdditional context about the presentation:\n{self.presentation_context}"
+        return f"{self.base_system_prompt}\n\nAdditional context about this specific presentation:\n{self.presentation_context}"
 
     async def initialize_async(self):
         """Initialize the parts that need to be done asynchronously."""

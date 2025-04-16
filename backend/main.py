@@ -9,6 +9,13 @@ from app.services.pinecone_assistant import PineconeAssistant
 import os
 from typing import List, Dict, Any
 from pydantic import BaseModel
+import socket
+import time
+from pynput.keyboard import Key, Controller
+from pynput.mouse import Button, Controller as MouseController
+import subprocess
+import platform
+import pyautogui
 
 # uvicorn main:app --reload       
 
@@ -30,6 +37,15 @@ async def get_pinecone_assistant_http(request: Request) -> PineconeAssistant:
 class PresentationContext(BaseModel):
     context: str
 
+# Define a model for key command input
+class KeyCommand(BaseModel):
+    command: str
+
+# Define window coordinates for the two applications
+# These will need to be adjusted for your specific setup
+LEFT_WINDOW_COORDS = (400, 400)  # X, Y coordinates to click for focusing left window
+RIGHT_WINDOW_COORDS = (1200, 400)  # X, Y coordinates to click for focusing right window
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize the assistant on startup
@@ -42,6 +58,9 @@ async def lifespan(app: FastAPI):
         
         # Initialize presentation context
         app.state.presentation_context = ""
+        
+        # Initialize current window tracking
+        app.state.current_window = "left"
         
         logging.info("PineconeAssistant initialized successfully")
         
@@ -57,6 +76,7 @@ async def lifespan(app: FastAPI):
     # Cleanup on shutdown if needed
     app.state.pinecone_assistant = None
     app.state.presentation_context = ""
+    app.state.current_window = "left"
 
 app = FastAPI(
     title="FastAPI Project",
@@ -255,7 +275,144 @@ async def get_presentation_context(
             detail=f"Failed to get presentation context: {str(e)}"
         )
 
+@app.post("/input")
+async def handle_input(
+    key_command: KeyCommand
+) -> Dict[str, Any]:
+    """
+    Emulate key presses based on received command.
+    
+    Accepted commands:
+    - "forward": Press right arrow key to advance PowerPoint slide on secondary monitor
+    - "backward": Press left arrow key to go back in PowerPoint slides on secondary monitor
+    - "up": Press up arrow key to scroll up in Chrome on main monitor
+    - "down": Press down arrow key to scroll down in Chrome on main monitor
+    
+    Returns a JSON response indicating which key was pressed.
+    """
+    if key_command.command not in ["forward", "backward", "up", "down"]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid command: {key_command.command}. Accepted commands are: forward, backward, up, down."
+        )
+    
+    try:
+        if platform.system() == "Darwin":  # macOS
+            # Save the current mouse position
+            original_position = pyautogui.position()
+            
+            if key_command.command in ["forward", "backward"]:
+                # PowerPoint control on secondary monitor
+                key_to_press = "right" if key_command.command == "forward" else "left"
+                
+                # Create AppleScript to control PowerPoint
+                applescript = f'''
+                tell application "Microsoft PowerPoint"
+                    activate
+                    tell application "System Events"
+                        key code {124 if key_command.command == "forward" else 123}
+                    end tell
+                end tell
+                '''
+                
+                # Execute the AppleScript
+                result = subprocess.run(["osascript", "-e", applescript], 
+                                      capture_output=True, text=True)
+                
+                # Return focus to the previous application (most likely Chrome)
+                # Adjust the delay as needed
+                time.sleep(0.2)
+                
+                # Return mouse to original position
+                pyautogui.moveTo(original_position[0], original_position[1])
+                
+                return {
+                    "status": "success",
+                    "message": f"Successfully sent {key_to_press} arrow key to PowerPoint",
+                    "application": "Microsoft PowerPoint",
+                    "command": key_command.command
+                }
+            else:  # "up" or "down"
+                # Chrome scrolling on main monitor
+                # First, make sure Chrome is active
+                applescript = '''
+                tell application "Google Chrome"
+                    activate
+                end tell
+                '''
+                subprocess.run(["osascript", "-e", applescript], capture_output=True, text=True)
+                
+                # Now send the key
+                key_to_press = Key.up if key_command.command == "up" else Key.down
+                keyboard = Controller()
+                keyboard.press(key_to_press)
+                time.sleep(0.1)
+                keyboard.release(key_to_press)
+                
+                # Return mouse to original position
+                pyautogui.moveTo(original_position[0], original_position[1])
+                
+                return {
+                    "status": "success",
+                    "message": f"Successfully scrolled {key_command.command} in Chrome",
+                    "application": "Google Chrome",
+                    "command": key_command.command
+                }
+        else:
+            # Fallback for non-macOS systems
+            keyboard = Controller()
+            key_mapping = {
+                "forward": Key.right,
+                "backward": Key.left,
+                "up": Key.up,
+                "down": Key.down
+            }
+            
+            key = key_mapping[key_command.command]
+            keyboard.press(key)
+            time.sleep(0.1)
+            keyboard.release(key)
+            
+            return {
+                "status": "success",
+                "message": f"Successfully emulated key press: {key_command.command}",
+                "key": str(key)
+            }
+    except Exception as e:
+        logging.error(f"Error emulating key press: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to emulate key press: {str(e)}"
+        )
+
 if __name__ == "__main__":
     import uvicorn
+    
+    # Get the machine's IP address on the local network
+    def get_local_ip():
+        try:
+            # Create a socket that connects to an external server to determine local IP
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            # Doesn't actually connect
+            s.connect(("8.8.8.8", 80))
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except Exception:
+            return "127.0.0.1"  # Fallback to localhost if unable to determine IP
+    
+    # Configure logging
     logging.basicConfig(level=logging.INFO)
-    uvicorn.run("main:app", host="localhost", port=8000, reload=True) 
+    
+    # Get local IP and port
+    host = "0.0.0.0"  # Listen on all network interfaces
+    port = 8000
+    local_ip = get_local_ip()
+    
+    # Log the URLs where the server can be accessed
+    print(f"Starting server at:")
+    print(f"    Local:      http://localhost:{port}")
+    print(f"    Network:    http://{local_ip}:{port}")
+    
+    # Run the server
+    uvicorn.run("main:app", host=host, port=port, reload=True) 
