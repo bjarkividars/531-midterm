@@ -5,23 +5,24 @@
 .uploadButton {
   width: 100%;
   background-color: transparent;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
+  color: var(--text-color);
+  border: 1px solid #333;
   padding: 12px 20px;
-  border-radius: 10px;
+  border-radius: 999px;
   cursor: pointer;
   font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(67, 97, 238, 0.15);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 .uploadButton:hover {
-  background-color: #f3f4f6;
+  background-color: rgba(0, 233, 150, 0.1);
+  border-color: var(--highlight-color);
   transform: translateY(-2px);
-  box-shadow: 0 6px 10px rgba(67, 97, 238, 0.2);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
 }
 
 .modalOverlay {
@@ -30,7 +31,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(26, 26, 46, 0.7);
+  background-color: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
@@ -39,38 +40,40 @@
 }
 
 .modalContent {
-  background-color: white;
+  background-color: #111;
   border-radius: 16px;
   padding: 32px;
   width: 90%;
   max-width: 600px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   max-height: 90vh;
   overflow-y: auto;
+  border: 1px solid #222;
+  color: var(--text-color);
 }
 
 .modalContent h2 {
   margin-top: 0;
-  color: #16213e;
+  color: var(--text-color);
   font-weight: 600;
 }
 
 .dropZone {
-  border: 2px dashed #4361ee;
+  border: 2px dashed var(--highlight-color);
   border-radius: 12px;
   padding: 36px;
   text-align: center;
   margin: 24px 0;
   cursor: pointer;
-  background-color: #f3f6ff;
+  background-color: rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
 }
 
 .dropZone:hover {
-  border-color: #3a0ca3;
-  background-color: #e6ecff;
+  border-color: var(--secondary-color);
+  background-color: rgba(0, 233, 150, 0.1);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(67, 97, 238, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .dropZoneContent {
@@ -81,7 +84,7 @@
 
 .dropZoneContent p {
   margin-top: 0;
-  color: #4f566b;
+  color: var(--text-color);
 }
 
 .selectedFiles {
@@ -97,7 +100,8 @@
 
 .selectedFiles li {
   margin: 4px 0;
-  color: #4f566b;
+  color: var(--text-color);
+  opacity: 0.8;
   word-break: break-all;
 }
 
@@ -112,34 +116,34 @@
 .submitButton {
   padding: 12px 24px;
   border: none;
-  border-radius: 10px;
+  border-radius: 999px;
   cursor: pointer;
   font-size: 16px;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .cancelButton {
-  background-color: #eaecef;
-  color: #4f566b;
+  background-color: #333;
+  color: var(--text-color);
 }
 
 .submitButton {
-  background-color: #4361ee;
-  color: white;
+  background-color: var(--highlight-color);
+  color: #000;
   font-weight: 500;
 }
 
 .cancelButton:hover {
-  background-color: #d8dde6;
+  background-color: #444;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .submitButton:hover {
-  background-color: #3a0ca3;
+  background-color: var(--secondary-color);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(67, 97, 238, 0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .cancelButton:disabled,
@@ -158,13 +162,13 @@
 }
 
 .success {
-  background-color: #e3f8ec;
-  color: #05603a;
-  border: 1px solid #c3e9d7;
+  background-color: rgba(0, 233, 150, 0.1);
+  color: var(--highlight-color);
+  border: 1px solid rgba(0, 233, 150, 0.3);
 }
 
 .error {
-  background-color: #fee7e7;
-  color: #b91c1c;
-  border: 1px solid #fcd5d5;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
 } 

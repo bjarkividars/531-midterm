@@ -544,7 +544,7 @@ async def process_directional_command(command: str) -> Dict[str, Any]:
 
                 # Create AppleScript to control PowerPoint
                 applescript = f'''
-                tell application "Microsoft PowerPoint"
+                tell application "Figma"
                     activate
                     tell application "System Events"
                         key code {124 if command == "forward" else 123}
@@ -565,8 +565,8 @@ async def process_directional_command(command: str) -> Dict[str, Any]:
 
                 return {
                     "status": "success",
-                    "message": f"Successfully sent {key_to_press} arrow key to PowerPoint",
-                    "application": "Microsoft PowerPoint",
+                    "message": f"Successfully sent {key_to_press} arrow key to Figma",
+                    "application": "Figma",
                     "command": command
                 }
             else:  # "up" or "down"
@@ -584,7 +584,7 @@ async def process_directional_command(command: str) -> Dict[str, Any]:
                 key_to_press = Key.up if command == "up" else Key.down
                 keyboard = Controller()
                 keyboard.press(key_to_press)
-                time.sleep(0.1)
+                time.sleep(0.1  )
                 keyboard.release(key_to_press)
 
                 # Return mouse to original position

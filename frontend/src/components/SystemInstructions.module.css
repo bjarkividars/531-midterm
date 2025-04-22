@@ -1,10 +1,10 @@
 .instructionsContainer {
   margin-bottom: 24px;
   padding: 16px;
-  background-color: #f8fafd;
+  background-color: rgba(0, 0, 0, 0.3);
   border-radius: 10px;
-  border: 1px solid #e6e9f0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #222;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .instructionsHeader {
@@ -17,15 +17,15 @@
 .instructionsHeader h3 {
   margin: 0;
   font-size: 1.1rem;
-  color: #16213e;
+  color: var(--text-color);
   font-weight: 600;
 }
 
 .editButton {
   background-color: transparent;
-  color: #4361ee;
-  border: 1px solid #4361ee;
-  border-radius: 6px;
+  color: var(--highlight-color);
+  border: 1px solid var(--highlight-color);
+  border-radius: 999px;
   padding: 6px 12px;
   font-size: 0.85rem;
   cursor: pointer;
@@ -33,7 +33,7 @@
 }
 
 .editButton:hover {
-  background-color: rgba(67, 97, 238, 0.1);
+  background-color: rgba(0, 233, 150, 0.1);
 }
 
 .editControls {
@@ -47,7 +47,7 @@
 .saveButton {
   width: 100%;
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: 999px;
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -55,22 +55,22 @@
 
 .cancelButton {
   background-color: transparent;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
+  color: var(--text-color);
+  border: 1px solid #333;
 }
 
 .cancelButton:hover {
-  background-color: #f3f4f6;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .saveButton {
-  background-color: #4361ee;
-  color: white;
-  border: 1px solid #4361ee;
+  background-color: var(--highlight-color);
+  color: #000;
+  border: 1px solid var(--highlight-color);
 }
 
 .saveButton:hover {
-  background-color: #3a56d4;
+  background-color: var(--secondary-color);
 }
 
 .saveButton:disabled,
@@ -84,27 +84,27 @@
   box-sizing: border-box;
   padding: 12px;
   border-radius: 8px;
-  border: 1px solid #d1d5db;
+  border: 1px solid #333;
   font-family: inherit;
   font-size: 0.9rem;
   line-height: 1.5;
   resize: vertical;
   min-height: 100px;
-  background-color: white;
-  color: #16213e;
+  background-color: #111;
+  color: var(--text-color);
 }
 
 .instructionsEditor:focus {
   outline: none;
-  border-color: #4361ee;
-  box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+  border-color: var(--highlight-color);
+  box-shadow: 0 0 0 2px rgba(0, 233, 150, 0.2);
 }
 
 .instructionsText {
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(0, 0, 0, 0.2);
   padding: 12px;
   border-radius: 8px;
-  border: 1px solid #e6e9f0;
+  border: 1px solid #222;
   font-size: 0.9rem;
   line-height: 1.5;
   max-height: 150px;
@@ -114,14 +114,14 @@
 .instructionsText p {
   margin: 0;
   white-space: pre-line;
-  color: #4b5563;
+  color: var(--text-color);
 }
 
 .error {
   margin-top: 8px;
   margin-bottom: 8px;
   color: #ef4444;
-  background-color: #fee2e2;
+  background-color: rgba(239, 68, 68, 0.1);
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 0.85rem;
@@ -130,15 +130,16 @@
 .success {
   margin-top: 8px;
   margin-bottom: 8px;
-  color: #10b981;
-  background-color: #d1fae5;
+  color: var(--highlight-color);
+  background-color: rgba(0, 233, 150, 0.1);
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 0.85rem;
 }
 
 .loadingMessage {
-  color: #6b7280;
+  color: var(--text-color);
+  opacity: 0.7;
   font-size: 0.9rem;
   text-align: center;
   padding: 12px;
@@ -147,17 +148,19 @@
 .contextHelp {
   margin-bottom: 12px;
   font-size: 0.85rem;
-  color: #4b5563;
+  color: var(--text-color);
+  opacity: 0.8;
   line-height: 1.5;
 }
 
 .emptyContext {
   padding: 12px;
   border-radius: 8px;
-  border: 1px dashed #d1d5db;
-  color: #6b7280;
+  border: 1px dashed #333;
+  color: var(--text-color);
+  opacity: 0.7;
   font-size: 0.9rem;
   font-style: italic;
   text-align: center;
-  background-color: #f9fafb;
+  background-color: rgba(0, 0, 0, 0.2);
 } 

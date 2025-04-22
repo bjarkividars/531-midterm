@@ -4,7 +4,6 @@ import { KnowledgeFileSidebar } from './components/KnowledgeFileSidebar'
 import { Teleprompter } from './components/teleprompter/Teleprompter'
 import styles from './App.module.css'
 import { 
-  Transcription, 
   WebSocketRefs,
   WebSocketHandlers,
   cleanupResources,
@@ -14,7 +13,8 @@ import {
 
 export const App = () => {
   // Transcription state
-  const [transcriptions, setTranscriptions] = useState<Transcription[]>([]);
+  const [finalTranscription, setFinalTranscription] = useState("");
+  const [partialTranscription, setPartialTranscription] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   
   // Teleprompter state
@@ -34,35 +34,17 @@ export const App = () => {
 
   // Helper for updating transcriptions
   const updateTranscription = (text: string, type: "partial" | "final" | "section") => {
+    console.log(`Updating transcription: ${text} (${type})`);
+    
     if (type === "partial") {
-      setTranscriptions((prev) => {
-        const newTranscriptions = [...prev];
-        // If the last message was partial, replace it with the new partial message
-        if (newTranscriptions.length > 0 && 
-            newTranscriptions[newTranscriptions.length - 1].type === "partial") {
-          newTranscriptions[newTranscriptions.length - 1] = { text, type };
-        } else {
-          // Otherwise add a new partial message
-          newTranscriptions.push({ text, type });
-        }
-        return newTranscriptions;
-      });
+      // Replace the current partial transcription
+      setPartialTranscription(text);
     } else if (type === "final") {
-      setTranscriptions((prev) => {
-        const newTranscriptions = [...prev];
-        // If the last message was partial, replace it with the final message
-        if (newTranscriptions.length > 0 && 
-            newTranscriptions[newTranscriptions.length - 1].type === "partial") {
-          newTranscriptions[newTranscriptions.length - 1] = { text, type };
-        } else {
-          // Otherwise add a new final message
-          newTranscriptions.push({ text, type });
-        }
-        return newTranscriptions;
-      });
+      // Append to final transcription and clear partial
+      setFinalTranscription(prev => prev + (prev ? ' ' : '') + text);
+      setPartialTranscription("");
     } else if (type === "section") {
-      // For complete transcriptions, just set it directly
-      setTranscriptions([{ text, type: "section" }]);
+      // Ignoring section type for now
     }
   };
   
@@ -73,7 +55,8 @@ export const App = () => {
 
   // Function to clear transcriptions
   const clearTranscription = () => {
-    setTranscriptions([]);
+    setFinalTranscription("");
+    setPartialTranscription("");
   };
 
   // WebSocket handlers object
@@ -89,7 +72,8 @@ export const App = () => {
 
   // Reset state function for connecting
   const resetState = useCallback(() => {
-    setTranscriptions([]);
+    setFinalTranscription("");
+    setPartialTranscription("");
     setAssistantResponse("");
     setIsShowingResponse(false);
     setIsLoading(false);
@@ -129,9 +113,11 @@ export const App = () => {
         <KnowledgeFileSidebar />
       </div>
       <div className={styles.mainContent}>
-        <h1>PodiumPro</h1>        
+        <h1 className={styles.logo}>Podium<span className={styles.highlight}>Pro</span></h1>
+        <p className={styles.tagline}>Confidence at the Click of a Button</p>
+        
         <TranscriptionComponent
-          transcriptions={transcriptions.map((t) => t.text).join(" ")}
+          transcriptions={finalTranscription + (partialTranscription ? ' ' + partialTranscription : '')}
           isConnected={isConnected}
           onConnect={connect}
           onDisconnect={disconnect}

@@ -9,9 +9,10 @@
   width: 100%;
   margin: 0 auto;
   padding: 24px;
-  background-color: #fff;
+  background-color: rgba(0, 0, 0, 0.3);
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border: 1px solid #222;
 }
 
 /* Controls styling */
@@ -23,18 +24,18 @@
   padding: 12px 24px;
   font-size: 1rem;
   border: none;
-  border-radius: 10px;
-  background-color: #4361ee;
-  color: white;
+  border-radius: 999px;
+  background-color: var(--button-color);
+  color: var(--background-color);
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(67, 97, 238, 0.15);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 .startButton:hover {
-  background-color: #3a0ca3;
+  background-color: var(--highlight-color);
   transform: translateY(-2px);
-  box-shadow: 0 6px 10px rgba(67, 97, 238, 0.2);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
 }
 
 .recordingControls {
@@ -47,10 +48,10 @@
   padding: 12px 24px;
   font-size: 1rem;
   border: none;
-  border-radius: 10px;
+  border-radius: 999px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 .stopButton:first-child {
@@ -59,13 +60,13 @@
 }
 
 .stopButton:last-of-type {
-  background-color: #10b981;
-  color: white;
+  background-color: var(--highlight-color);
+  color: black;
 }
 
 .stopButton:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
 }
 
 .stopButton:disabled {
@@ -100,10 +101,10 @@
   min-height: 100px;
   max-height: 200px;
   overflow-y: auto;
-  border: 1px solid #e6e9f0;
+  border: 1px solid #222;
   border-radius: 10px;
   padding: 16px;
-  background-color: #f8fafc;
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 .message {
@@ -114,24 +115,26 @@
 }
 
 .partial {
-  color: #6b7280;
+  color: var(--text-color);
+  opacity: 0.7;
   font-style: italic;
 }
 
 .final {
-  color: #16213e;
+  color: var(--text-color);
 }
 
 .section {
-  background-color: #eef2ff;
-  border-left: 3px solid #4361ee;
+  background-color: rgba(0, 233, 150, 0.1);
+  border-left: 3px solid var(--highlight-color);
   padding: 12px;
   margin: 12px 0;
   border-radius: 6px;
 }
 
 .status {
-  color: #6b7280;
+  color: var(--text-color);
+  opacity: 0.7;
   font-size: 0.85rem;
   text-align: center;
   font-style: italic;
@@ -144,31 +147,32 @@
   width: 100%;
   min-height: 50px;
   padding: 18px;
-  background-color: #f8fafc;
+  background-color: rgba(0, 0, 0, 0.3);
   border-radius: 12px;
-  border-left: 4px solid #4361ee;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  border-left: 4px solid var(--highlight-color);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .currentTranscription {
   font-size: 1.1rem;
   line-height: 1.6;
-  color: #16213e;
+  color: var(--text-color);
   word-wrap: break-word;
 }
 
 .currentTranscription.partial {
-  color: #6b7280;
+  color: var(--text-color);
+  opacity: 0.7;
   font-style: italic;
 }
 
 .currentTranscription.final {
-  color: #16213e;
+  color: var(--text-color);
   font-weight: 500;
 }
 
 .currentTranscription.section {
-  color: #3a0ca3;
+  color: var(--highlight-color);
   font-weight: 500;
 }
 
@@ -193,7 +197,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(22, 33, 62, 0.85);
+  background-color: rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(6px);
   z-index: -1;
 }
@@ -202,12 +206,12 @@
   width: 80%;
   max-width: 800px;
   padding: 36px;
-  background-color: #16213e;
-  color: white;
+  background-color: #111;
+  color: var(--text-color);
   border-radius: 20px;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
   position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid #222;
 }
 
 .closeButton {
@@ -218,7 +222,7 @@
   height: 36px;
   background: rgba(255, 255, 255, 0.1);
   border: none;
-  color: #f8fafc;
+  color: var(--text-color);
   font-size: 24px;
   cursor: pointer;
   border-radius: 50%;
@@ -229,14 +233,15 @@
 }
 
 .closeButton:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--highlight-color);
+  color: #000;
   transform: scale(1.1);
 }
 
 .teleprompterContent h3 {
   margin-top: 0;
   margin-bottom: 24px;
-  color: #4361ee;
+  color: var(--highlight-color);
   font-size: 1.5rem;
   text-align: center;
   font-weight: 600;
@@ -251,55 +256,73 @@
 }
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 /* Audio response visualization */
 .audioResponse {
-  padding: 16px;
-  margin-top: 24px;
-  background-color: #f8fafc;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .playingIndicator {
-  display: flex;
-  align-items: center;
-  color: #4361ee;
-  margin-bottom: 12px;
+  color: var(--highlight-color);
+  font-weight: 500;
+  margin-bottom: 10px;
+  animation: pulse 2s infinite;
 }
 
 .spinner {
+  display: inline-block;
   width: 20px;
   height: 20px;
-  border: 3px solid #e6e9f0;
-  border-top: 3px solid #4361ee;
-  border-radius: 50%;
   margin-right: 10px;
+  border: 3px solid rgba(0, 233, 150, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--highlight-color);
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .sentences, .sentence, .sentence.playing, .sentence.played {
-  margin: 8px 0;
-  color: #16213e;
-  font-size: 1rem;
+  transition: all 0.3s ease;
 }
 
 @keyframes pulse {
-  0% { background-color: rgba(67, 97, 238, 0.1); }
-  50% { background-color: rgba(67, 97, 238, 0.2); }
-  100% { background-color: rgba(67, 97, 238, 0.1); }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
 } 

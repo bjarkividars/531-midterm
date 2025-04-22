@@ -69,6 +69,8 @@ export const initOutputWebSocket = async (
             break;
             
           case "partial_transcription":
+            // Close teleprompter if it's open when new transcription comes in
+            handlers.setIsShowingResponse(false);
             handlers.updateTranscription(jsonData.text, "partial");
             break;
             

@@ -71,16 +71,27 @@ class PineconeAssistant:
         self.client = OpenAI(api_key=settings.openai_api_key)
         self.vector_store = None
         self.model = "gpt-4.1"
-        self.base_system_prompt = """You are a helpful assistant that answers questions about the user's data.
-                You will be provided with relevant context from the knowledge base for each question.
-                Use this context to provide accurate and helpful answers.
-                If the context doesn't contain the information needed to answer the question, return a guesstimate for the answer but make it clear that it is a guesstimate (Guesstimate: ...).
-                Never mention the context in your response or the "information provided", only the answer.
-                Ensure your responses are naturally phrased so they can be spoken directly by the speaker."""
-        
+        self.base_system_prompt = """
+            Your response will be spoken aloud by the presenter during a live presentation.
+
+            Your primary goal is to provide clear, natural, and confident answers that sound like something a well-prepared speaker would say on stage. Keep your tone conversational, concise, and helpful — avoid overly technical, robotic, or formal phrasing.
+
+            You will be given relevant context from a knowledge base. Use this to craft accurate answers. Do not mention the context, source, or that you were given information — just speak as if you know the answer.
+
+            If the context does not contain enough information to answer confidently, provide a thoughtful guesstimate and clearly label it (e.g., “Guesstimate: ...”). Never fabricate certainty.
+
+            Summary of rules:
+            - Responses must sound natural when spoken aloud
+            - Do not reference context or data sources
+            - Be helpful, clear, and confident
+            - Use guesstimates only when needed, and label them clearly
+
+            Always aim to support the presenter — your answer should help them shine.
+            """
+
         # Placeholder for additional presentation context
         self.presentation_context = ""
-        
+
         # Store reference to the FastAPI app for accessing app.state
         self.app = app
 
@@ -90,7 +101,7 @@ class PineconeAssistant:
         """
         if not self.presentation_context:
             return self.base_system_prompt
-            
+
         return f"{self.base_system_prompt}\n\nAdditional context about this specific presentation:\n{self.presentation_context}"
 
     async def initialize_async(self):
@@ -186,7 +197,7 @@ class PineconeAssistant:
     def get_output_websocket(self):
         """
         Get the output websocket from app state if available.
-        
+
         Returns:
             WebSocket: The output websocket or None if not available
         """
