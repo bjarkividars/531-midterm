@@ -1,81 +1,78 @@
-# Live Question-Answering Assistant Frontend
+# PodiumPro
 
-This frontend application provides a user interface for the Live Question-Answering Assistant system. It allows users to record audio questions, send them to the backend for processing, and receive responses.
+This project consists of a backend server that directly controls your presentation software and web browser based on input from a Raspberry Pi client.
 
-## Features
+## System Overview
 
-- Real-time audio recording and streaming
-- WebSocket communication with the backend
-- Knowledge base management interface
-- Modern React + TypeScript implementation
+PodiumPro is designed to give presenters complete control of their presentations using a physical Raspberry Pi controller with a joystick and button. Unlike traditional presentation systems with separate frontend applications, PodiumPro works by having the backend directly control your existing applications:
 
-## Technologies Used
+- **Direct Application Control**: The backend uses system automation to control Figma, PowerPoint, or other presentation software
+- **Browser Control**: Scrolling through AI responses in your browser is handled by direct keyboard input from the backend
+- **Knowledge Base Management**: Uploaded files are processed for question answering
 
-- React 19
-- TypeScript
-- Vite
-- WebSockets for real-time communication
-- CSS Modules for styling
+## Technical Implementation
 
-## Prerequisites
+The backend server handles:
+- Receiving joystick input from the Raspberry Pi
+- Directly controlling your presentation software with left/right arrow key presses
+- Controlling your browser's scrolling with up/down key presses
+- Processing audio questions via speech-to-text
+- Generating AI-powered answers using the knowledge base
+- Serving a simple web interface for knowledge base management
 
-- Node.js (v18+)
-- npm or yarn
+## Knowledge Base Management
 
-## Getting Started
+The system provides a simple web interface for:
+- Uploading new documents to the knowledge base
+- Viewing existing knowledge base files
+- Deleting documents from the knowledge base
 
-1. **Install dependencies**
+This interface is accessible through your web browser, but the main presentation control happens through direct system automation.
 
-```bash
-cd frontend
-npm install
-# or
-yarn install
-```
+## Physical Control System
 
-2. **Set up environment**
+The PodiumPro system is controlled through a Raspberry Pi with:
+- A joystick for navigation and scrolling
+  - Left/Right: Navigate slides in your presentation software
+  - Up/Down: Scroll through responses in your browser
+- A button for recording audience questions
 
-Make sure the backend server is running (see backend README).
+## Setup Requirements
 
-3. **Start the development server**
+1. **Backend Server**
+   - Running locally on the presenter's computer
+   - Has permission to control applications (accessibility permissions on macOS)
+   - Connected to the Raspberry Pi client
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+2. **Presentation Environment**
+   - Figma, PowerPoint, or other compatible presentation software
+   - Web browser for viewing AI-generated responses
+   - Both applications should be open during presentations
 
-This will start the Vite development server, typically on http://localhost:5173.
-
-4. **Build for production**
-
-```bash
-npm run build
-# or
-yarn build
-```
-
-The build output will be in the `dist` directory.
-
-## Project Structure
-
-- `src/` - Source code
-  - `components/` - React components
-  - `services/` - API and WebSocket services
-  - `assets/` - Static assets
-  - `App.tsx` - Main application component
-  - `main.tsx` - Application entry point
+3. **Raspberry Pi Client**
+   - Connected to the same network as the presenter's computer
+   - Properly configured with joystick and microphone
 
 ## Usage
 
-1. Open the application in your browser
-2. Ensure your microphone is enabled
-3. Click the record button to start capturing audio
-4. The application will stream your audio to the backend
-5. The backend will process your question and stream the response back to the frontend
+1. Start the backend server on your computer
+2. Open your presentation software (Figma, PowerPoint, etc.)
+3. Open a web browser for viewing responses
+4. Connect the Raspberry Pi client to the backend
+5. Control your presentation:
+   - Navigate slides with left/right joystick movements
+   - Scroll through responses with up/down joystick movements
+   - Record audience questions by pressing the button
+
+## Integration with Raspberry Pi
+
+The physical control is handled through the [PodiumPro Raspberry Pi Client](https://github.com/bjarkividars/PodiumPro-pi-client). The Pi client provides:
+- Physical joystick navigation for direct slide control
+- Button-activated recording of audience questions
+- Direct audio transmission to the backend
 
 ## Troubleshooting
 
-- If you encounter WebSocket connection issues, make sure the backend server is running
-- For microphone access problems, check that your browser has permission to use the microphone
-- If audio recording doesn't work, try using a different browser (Chrome is recommended)
+- If application control isn't working, check system permissions (Accessibility settings on macOS)
+- For connectivity issues, verify the Raspberry Pi client is properly connected to the backend
+- If questions aren't being processed, check the backend logs for API or service errors
