@@ -1,64 +1,42 @@
 import { FC } from "react";
 import styles from "./Transcription.module.css";
 
-interface Message {
-  text: string;
-  type: "partial" | "final" | "section" | "status";
-}
-
 interface TranscriptionProps {
-  messages: Message[];
   transcriptions: string;
-  isRecording: boolean;
-  onStartRecording: () => void;
-  onStopRecording: (command: "STOP_DISCARD" | "STOP_PROCESS") => void;
+  isConnected: boolean;
+  onConnect: () => void;
+  onDisconnect: () => void;
 }
 
 export const Transcription: FC<TranscriptionProps> = ({
-  messages,
   transcriptions,
-  isRecording,
-  onStartRecording,
-  onStopRecording,
+  isConnected,
+  onConnect,
+  onDisconnect,
 }) => {
   return (
     <div className={styles.outerContainer}>
       <div className={styles.transcriptionContainer}>
         <div className={styles.controls}>
-          {!isRecording ? (
-            <button className={styles.startButton} onClick={onStartRecording}>
-              Start Recording
+          {!isConnected ? (
+            <button className={styles.startButton} onClick={onConnect}>
+              Connect
             </button>
           ) : (
             <div className={styles.recordingControls}>
               <button
                 className={styles.stopButton}
-                onClick={() => onStopRecording("STOP_DISCARD")}
+                onClick={onDisconnect}
               >
-                Discard
-              </button>
-              <button
-                className={styles.stopButton}
-                onClick={() => onStopRecording("STOP_PROCESS")}
-              >
-                Process
+                Disconnect
               </button>
               <div className={styles.recordingIndicator}>
                 <span className={styles.recordingDot}></span>
-                Recording...
+                Connected
               </div>
             </div>
           )}
         </div>
-
-        {/* Status messages container */}
-        {/* <div className={styles.messagesContainer}>
-          {messages.map((msg, idx) => (
-            <div key={idx} className={`${styles.message} ${styles[msg.type]}`}>
-              {msg.text}
-            </div>
-          ))}
-        </div> */}
 
         {/* Current transcription display */}
         {transcriptions && (

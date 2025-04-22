@@ -79,6 +79,12 @@
   background-color: rgba(255, 255, 255, 0.05);
   scroll-behavior: smooth;
   border: 1px solid rgba(255, 255, 255, 0.08);
+  outline: none;
+}
+
+.scrollContainer:focus {
+  border: 1px solid rgba(67, 97, 238, 0.6);
+  box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.3);
 }
 
 .scrollContainer::-webkit-scrollbar {

@@ -29,7 +29,10 @@ class TranscriptionResult:
         return self.complete_text
 
 async def send_messages(websocket, message_queue, transcription_result):
-    """Asynchronously send messages from the queue to the WebSocket."""
+    """
+    Asynchronously send messages from the queue to the WebSocket.
+    This function is used by websocket_transcribe but not by the unified endpoint.
+    """
     try:
         while True:
             message = await message_queue.get()
@@ -43,15 +46,22 @@ async def send_messages(websocket, message_queue, transcription_result):
         logging.error(f"Error sending messages: {e}")
 
 async def process_with_pinecone_assistant_text_only(
-    websocket: WebSocket,
     question: str,
     pinecone_assistant: PineconeAssistant
 ) -> None:
     """
     Process the user question with the Pinecone assistant and send text responses
-    directly to the websocket for teleprompter-style display.
+    directly to the output websocket for teleprompter-style display.
+    
+    The output websocket is obtained from app.state.output_websocket.
     """
     try:
+        # Get the output websocket from app state via the assistant
+        output_websocket = pinecone_assistant.get_output_websocket()
+        if not output_websocket:
+            logger.error("No output websocket available")
+            return
+            
         # Create a custom handler that sends text directly to the websocket
         class WebSocketTextHandler(AssistantEventHandler):
             def __init__(self, websocket):
@@ -93,11 +103,11 @@ async def process_with_pinecone_assistant_text_only(
                     logger.error(f"Error sending WebSocket message: {e}")
                     self.is_connection_open = False
         
-        # Create the handler
-        handler = WebSocketTextHandler(websocket)
+        # Create the handler with the output websocket
+        handler = WebSocketTextHandler(output_websocket)
         
         # Send message to client that we're starting to process
-        await websocket.send_json({
+        await output_websocket.send_json({
             "type": "processing_start",
             "message": "Processing your question..."
         })
@@ -111,10 +121,11 @@ async def process_with_pinecone_assistant_text_only(
         
     except Exception as e:
         logger.error(f"Error processing with Pinecone assistant (text only): {e}", exc_info=True)
-        # Send error message to the client
+        # Send error message to the client if output websocket is available
         try:
-            if websocket.client_state == WebSocketState.CONNECTED:
-                await websocket.send_json({
+            output_websocket = pinecone_assistant.get_output_websocket()
+            if output_websocket and output_websocket.client_state == WebSocketState.CONNECTED:
+                await output_websocket.send_json({
                     "type": "error",
                     "message": f"Error: {str(e)}"
                 })
@@ -129,14 +140,19 @@ async def websocket_transcribe(websocket: WebSocket, pinecone_assistant: Pinecon
     message_queue = asyncio.Queue()
     transcription_result = TranscriptionResult()
 
+    # Get output websocket if available (for backwards compatibility)
+    output_websocket = pinecone_assistant.get_output_websocket()
+
     # Create a message callback that puts messages on the queue
     def message_callback(message):
         message_queue.put_nowait(message)
 
     # Create the speech recognition manager
     speech_manager = create_speech_manager(
-        message_callback=message_callback,
-        recognition_done_event=recognition_done
+        message_callback=message_callback,  # Keep the message callback for this endpoint
+        recognition_done_event=recognition_done,
+        transcription_result=transcription_result,
+        output_websocket=output_websocket  # Also use the output websocket if available
     )
 
     # Start sending partial/final transcription messages
@@ -170,13 +186,22 @@ async def websocket_transcribe(websocket: WebSocket, pinecone_assistant: Pinecon
                         logger.info(f"Complete transcription text: {complete_text[:50]}...")
                         await websocket.send_text(f"COMPLETE_TRANSCRIPTION: {complete_text}")
 
+                        # Send to output websocket if available
+                        if output_websocket:
+                            try:
+                                await output_websocket.send_json({
+                                    "type": "complete_transcription",
+                                    "data": complete_text
+                                })
+                            except Exception as e:
+                                logger.error(f"Error sending complete transcription to output websocket: {e}")
+
                         # Process with Pinecone assistant if available
                         if pinecone_assistant and complete_text.strip():
                             logger.info("Processing with assistant (text only)")
                             
                             # Use our text-only processing function
                             await process_with_pinecone_assistant_text_only(
-                                websocket,
                                 complete_text,
                                 pinecone_assistant
                             )

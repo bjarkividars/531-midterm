@@ -4,20 +4,18 @@ import { KnowledgeFileSidebar } from './components/KnowledgeFileSidebar'
 import { Teleprompter } from './components/teleprompter/Teleprompter'
 import styles from './App.module.css'
 import { 
-  Message, 
   Transcription, 
   WebSocketRefs,
   WebSocketHandlers,
   cleanupResources,
-  startRecording as wsStartRecording,
-  stopRecording as wsStopRecording
+  connectToWebSocket,
+  disconnectFromWebSocket
 } from './services/WebSocketService'
 
 export const App = () => {
   // Transcription state
-  const [messages, setMessages] = useState<Message[]>([]);
   const [transcriptions, setTranscriptions] = useState<Transcription[]>([]);
-  const [isRecording, setIsRecording] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
   
   // Teleprompter state
   const [assistantResponse, setAssistantResponse] = useState("");
@@ -26,68 +24,86 @@ export const App = () => {
   // Loading state for waiting on assistant response
   const [isLoading, setIsLoading] = useState(false);
   
-  // WebSocket and audio refs
-  const transcriptionWsRef = useRef<WebSocket | null>(null);
-  const audioStreamRef = useRef<MediaStream | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  // WebSocket ref
+  const outputWsRef = useRef<WebSocket | null>(null);
 
   // WebSocket refs object
   const refs: WebSocketRefs = {
-    transcriptionWs: transcriptionWsRef,
-    audioStream: audioStreamRef,
-    audioContext: audioContextRef,
-    audioSource: sourceRef
+    outputWs: outputWsRef
   };
 
-  // Helper for appending messages
-  const appendMessage = (text: string, type: Message["type"]) => {
-    if (type === "status") {
-      setMessages((prev) => [...prev, { text, type }]);
-    } else if (type === "partial" || type === "final") {
+  // Helper for updating transcriptions
+  const updateTranscription = (text: string, type: "partial" | "final" | "section") => {
+    if (type === "partial") {
       setTranscriptions((prev) => {
         const newTranscriptions = [...prev];
-        // If the last message was partial, replace it with the new message
-        // (whether partial or final)
+        // If the last message was partial, replace it with the new partial message
         if (newTranscriptions.length > 0 && 
             newTranscriptions[newTranscriptions.length - 1].type === "partial") {
           newTranscriptions[newTranscriptions.length - 1] = { text, type };
         } else {
-          // Otherwise add a new message
+          // Otherwise add a new partial message
           newTranscriptions.push({ text, type });
         }
         return newTranscriptions;
       });
+    } else if (type === "final") {
+      setTranscriptions((prev) => {
+        const newTranscriptions = [...prev];
+        // If the last message was partial, replace it with the final message
+        if (newTranscriptions.length > 0 && 
+            newTranscriptions[newTranscriptions.length - 1].type === "partial") {
+          newTranscriptions[newTranscriptions.length - 1] = { text, type };
+        } else {
+          // Otherwise add a new final message
+          newTranscriptions.push({ text, type });
+        }
+        return newTranscriptions;
+      });
+    } else if (type === "section") {
+      // For complete transcriptions, just set it directly
+      setTranscriptions([{ text, type: "section" }]);
     }
+  };
+  
+  // For displaying status messages
+  const appendMessage = (text: string, type: string) => {
+    console.log(`${type}: ${text}`);
+  };
+
+  // Function to clear transcriptions
+  const clearTranscription = () => {
+    setTranscriptions([]);
   };
 
   // WebSocket handlers object
   const handlers: WebSocketHandlers = {
     appendMessage,
-    setIsRecording,
+    updateTranscription,
     setAssistantResponse,
     setIsShowingResponse,
-    setIsLoading
+    setIsLoading,
+    setIsConnected,
+    clearTranscription
   };
 
-  // Reset state function for startRecording
+  // Reset state function for connecting
   const resetState = useCallback(() => {
-    setMessages([]);
     setTranscriptions([]);
     setAssistantResponse("");
     setIsShowingResponse(false);
     setIsLoading(false);
   }, []);
 
-  // Start recording wrapper function
-  const startRecording = useCallback(async () => {
-    await wsStartRecording(refs, handlers, resetState);
+  // Connect to websocket
+  const connect = useCallback(async () => {
+    await connectToWebSocket(refs, handlers, resetState);
   }, [resetState]);
 
-  // Stop recording wrapper function
-  const stopRecording = useCallback((command: "STOP_DISCARD" | "STOP_PROCESS") => {
-    wsStopRecording(refs, handlers, isRecording, command);
-  }, [isRecording]);
+  // Disconnect from websocket
+  const disconnect = useCallback(() => {
+    disconnectFromWebSocket(refs, handlers);
+  }, []);
 
   // Handle teleprompter close
   const handleCloseTeleprompter = useCallback(() => {
@@ -115,11 +131,10 @@ export const App = () => {
       <div className={styles.mainContent}>
         <h1>PodiumPro</h1>        
         <TranscriptionComponent
-          messages={messages}
           transcriptions={transcriptions.map((t) => t.text).join(" ")}
-          isRecording={isRecording}
-          onStartRecording={startRecording}
-          onStopRecording={stopRecording}
+          isConnected={isConnected}
+          onConnect={connect}
+          onDisconnect={disconnect}
         />
         
         {isLoading && <LoadingSpinner />}

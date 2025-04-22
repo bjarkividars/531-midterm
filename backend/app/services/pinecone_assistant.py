@@ -7,6 +7,7 @@ import json
 import asyncio
 from typing import Optional, List, Dict, Any, Callable
 import datetime
+from fastapi import FastAPI
 
 from app.config import settings
 from app.services.pinecone_vector_store import PineconeVectorStore
@@ -66,7 +67,7 @@ class PineconeAssistant:
     and OpenAI's completions API for generating responses.
     """
 
-    def __init__(self):
+    def __init__(self, app: Optional[FastAPI] = None):
         self.client = OpenAI(api_key=settings.openai_api_key)
         self.vector_store = None
         self.model = "gpt-4.1"
@@ -79,6 +80,9 @@ class PineconeAssistant:
         
         # Placeholder for additional presentation context
         self.presentation_context = ""
+        
+        # Store reference to the FastAPI app for accessing app.state
+        self.app = app
 
     def get_system_prompt(self) -> str:
         """
@@ -96,9 +100,9 @@ class PineconeAssistant:
         return self
 
     @classmethod
-    async def create(cls):
+    async def create(cls, app: Optional[FastAPI] = None):
         """Factory method to create and initialize the assistant asynchronously."""
-        assistant = cls()
+        assistant = cls(app)
         await assistant.initialize_async()
         return assistant
 
@@ -178,3 +182,14 @@ class PineconeAssistant:
         except Exception as e:
             print(f"Error in ask_and_stream_response: {e}")
             raise
+
+    def get_output_websocket(self):
+        """
+        Get the output websocket from app state if available.
+        
+        Returns:
+            WebSocket: The output websocket or None if not available
+        """
+        if self.app and hasattr(self.app.state, 'output_websocket'):
+            return self.app.state.output_websocket
+        return None
