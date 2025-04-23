@@ -78,7 +78,7 @@ class PineconeAssistant:
 
             You will be given relevant context from a knowledge base. Use this to craft accurate answers. Do not mention the context, source, or that you were given information — just speak as if you know the answer.
 
-            If the context does not contain enough information to answer confidently, provide a thoughtful guesstimate and clearly label it (e.g., “Guesstimate: ...”). Never fabricate certainty.
+            If the context does not contain enough information to answer confidently, just say "That's a great question. I don't have that information at the top of my head but I'll get back to you on that." Never fabricate certainty.
 
             Summary of rules:
             - Responses must sound natural when spoken aloud
